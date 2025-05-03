@@ -33,23 +33,7 @@
 #EXPOSE 3000
 
 
-# Builder stage
-FROM rust:1.86 AS builder
-
-# Install cross
-RUN cargo install cross
-
-# Set working directory
-WORKDIR /app
-
-COPY ./api /app
-
-# Run the build
-RUN apt update && apt install -y docker.io
-RUN cross build --release --target armv7-unknown-linux-musleabihf
-
-# Final image
 FROM scratch
-COPY --from=builder /app/target/armv7-unknown-linux-musleabihf/release/api /api
+COPY ./api/target/armv7-unknown-linux-musleabihf/release/api /api
 ENTRYPOINT ["/api"]
 EXPOSE 3000
