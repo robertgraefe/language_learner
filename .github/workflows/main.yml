@@ -39,7 +39,7 @@ jobs:
     - name: Rename binary
       run: |
         mkdir -p out
-        cp target/armv7-unknown-linux-musleabihf/release/api out/api
+        cp api/target/armv7-unknown-linux-musleabihf/release/api out/api
 
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v2
