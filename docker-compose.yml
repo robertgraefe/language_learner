@@ -6,6 +6,10 @@ services:
       - NEO4J_USER=neo4j
       - NEO4J_PASSWORD=LimU74JJ6hFfjzBrhRpIm3y9aD_tJ1PqOBXIfRjxw-g
       - NEO4J_DB=neo4j
+
+      - NEO4J_dbms_memory_pagecache_size=128M   # Lower pagecache size
+      - NEO4J_dbms_memory_heap_initial_size=128M # Lower initial heap size
+      - NEO4J_dbms_memory_heap_max_size=256M    # Lower maximum heap size
       
     build:
       context: .
@@ -17,10 +21,6 @@ services:
 
   db:
     image: neo4j:latest
-    environment:
-      - NEO4J_dbms_memory_pagecache_size=128M   # Lower pagecache size
-      - NEO4J_dbms_memory_heap_initial_size=128M # Lower initial heap size
-      - NEO4J_dbms_memory_heap_max_size=256M    # Lower maximum heap size
     restart: always
     ports:
       - "7474:7474"
