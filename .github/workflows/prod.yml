@@ -1,9 +1,11 @@
 name: Build, Test and Deploy to Prod
 
+
 on:
   push:
     branches:
       - master
+
 
 jobs:
   build:
