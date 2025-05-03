@@ -40,7 +40,7 @@ jobs:
         cd api
         cross build --release --target armv7-unknown-linux-musleabihf
 
-    - name: Rename binary
+    - name: Prepare output directory
       run: |
         mkdir -p out
         cp api/target/armv7-unknown-linux-musleabihf/release/api out/api
@@ -58,7 +58,7 @@ jobs:
       run: |
         docker build -t $DOCKER_USERNAME/$DOCKER_IMAGE:arm -f Dockerfile ./out
         docker push $DOCKER_USERNAME/$DOCKER_IMAGE:arm
-      working-directory: ./out
+      working-directory: .  # Ensure the working directory is the root
       env:
         DOCKER_CLI_EXPERIMENTAL: enabled
 
