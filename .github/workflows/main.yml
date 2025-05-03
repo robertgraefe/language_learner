@@ -35,10 +35,10 @@ jobs:
     - name: Install cross
       run: cargo install cross --git https://github.com/cross-rs/cross
 
-    - name: Build ARM binary with cross
+    - name: Build x86_64 binary with cross
       run: |
         cd api
-        cross build --release --target armv7-unknown-linux-musleabihf
+        cross build --release --target x86_64-unknown-linux-musl
 
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v2
