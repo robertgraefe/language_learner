@@ -33,15 +33,25 @@
 #EXPOSE 3000
 
 
-# Build stage
+# Builder stage
 FROM rust:1.86 AS builder
+
+# Install cross
 RUN cargo install cross
-WORKDIR /api
-COPY api/ .
+
+# Set working directory
+WORKDIR /app
+
+# Copy only the necessary files
+COPY api/Cargo.toml .
+#COPY api/Cargo.lock . 
+COPY api/src ./src
+
+# Run the build
 RUN cross build --release --target armv7-unknown-linux-musleabihf
 
 # Final image
 FROM scratch
-COPY --from=builder /api/target/armv7-unknown-linux-musleabihf/release/api /api
+COPY --from=builder /app/target/armv7-unknown-linux-musleabihf/release/api /api
 ENTRYPOINT ["/api"]
 EXPOSE 3000
