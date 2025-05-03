@@ -11,7 +11,7 @@ jobs:
 
     env:
       DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}  # Docker username from secrets
-      DOCKER_IMAGE: language_learner_arm  # Name for the image
+      DOCKER_IMAGE: language_learner_x86  # Name for the image
 
     steps:
     - name: Checkout code
@@ -51,8 +51,8 @@ jobs:
 
     - name: Build and push Docker image
       run: |
-        docker build -t $DOCKER_USERNAME/$DOCKER_IMAGE:arm -f Dockerfile .
-        docker push $DOCKER_USERNAME/$DOCKER_IMAGE:arm
+        docker build -t $DOCKER_USERNAME/$DOCKER_IMAGE:x86 -f Dockerfile .
+        docker push $DOCKER_USERNAME/$DOCKER_IMAGE:x86
       working-directory: .  # Ensure the working directory is the root
       env:
         DOCKER_CLI_EXPERIMENTAL: enabled
