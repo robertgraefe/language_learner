@@ -30,6 +30,7 @@ jobs:
 
     - name: Build and test code
       run: |
+        cd api
         cargo build --verbose
         cargo test --verbose
 
