@@ -26,8 +26,22 @@
 ####
 
 
-FROM scratch
-COPY ./api/target/armv7-unknown-linux-musleabihf/release/api /api
+#FROM scratch
+#COPY ./api/target/armv7-unknown-linux-musleabihf/release/api /api
 #COPY ./out/api /api
+#ENTRYPOINT ["/api"]
+#EXPOSE 3000
+
+
+# Build stage
+FROM rust:1.86 AS builder
+RUN cargo install cross
+WORKDIR /api
+COPY ./api .
+RUN cross build --release --target armv7-unknown-linux-musleabihf
+
+# Final image
+FROM scratch
+COPY --from=builder /api/target/armv7-unknown-linux-musleabihf/release/api /api
 ENTRYPOINT ["/api"]
 EXPOSE 3000
