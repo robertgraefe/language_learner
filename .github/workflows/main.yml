@@ -58,6 +58,8 @@ jobs:
         DOCKER_CLI_EXPERIMENTAL: enabled
 
   deploy:
+
+  
     needs: build
     runs-on: ubuntu-latest
 
@@ -77,21 +79,20 @@ jobs:
     - name: Copy deployment files to droplet
       run: |
         sshpass -v -p ${{ secrets.DROPLET_PASSWORD }} scp -o StrictHostKeyChecking=no docker-compose.yml root@${{ vars.DROPLET_IP }}:~
-        sshpass -v -p ${{ secrets.DROPLET_PASSWORD }} scp -o StrictHostKeyChecking=no Dockerfile root@${{ vars.DROPLET_IP }}:~
-        sshpass -v -p ${{ secrets.DROPLET_PASSWORD }} scp -r -o StrictHostKeyChecking=no api/ root@${{ vars.DROPLET_IP }}:~
 
-    - name: Deploy
+    - name: Deploy on Droplet
       uses: appleboy/ssh-action@master
       with:
         host: ${{ vars.DROPLET_IP }}
         username: root
         password: ${{ secrets.DROPLET_PASSWORD }}
         script: |
-          cd ~
           export NEO4J_URI=${{ secrets.NEO4J_URI }}
           export NEO4J_USER=${{ secrets.NEO4J_USER }}
           export NEO4J_PASSWORD=${{ secrets.NEO4J_PASSWORD }}
-          export NEO4J_DB=${{ secrets.NEO4J_DB }}       
+          export NEO4J_DB=${{ secrets.NEO4J_DB }}
+          cd ~
           docker-compose down
           docker-compose pull
           docker-compose up -d
+
