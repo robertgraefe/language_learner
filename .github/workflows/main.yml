@@ -1,4 +1,4 @@
-name: Build, Test and Deploy to Prod
+name: Build, Test, and Deploy to Prod
 
 on:
   push:
@@ -11,7 +11,7 @@ jobs:
 
     env:
       DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}  # Docker username from secrets
-      DOCKER_IMAGE: ${{ vars.DOCKER_IMAGE }}  # Name for the image
+      DOCKER_IMAGE: language_learner_arm  # Name for the image
 
     steps:
     - name: Checkout code
@@ -56,9 +56,9 @@ jobs:
 
     - name: Build and push Docker image
       run: |
-        docker build -t $DOCKER_USERNAME/$DOCKER_IMAGE:arm -f Dockerfile .
+        docker build -t $DOCKER_USERNAME/$DOCKER_IMAGE:arm -f Dockerfile ./out
         docker push $DOCKER_USERNAME/$DOCKER_IMAGE:arm
-      working-directory: out
+      working-directory: ./out
       env:
         DOCKER_CLI_EXPERIMENTAL: enabled
 
