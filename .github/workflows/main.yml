@@ -40,6 +40,10 @@ jobs:
         cd api
         cross build --release --target armv7-unknown-linux-musleabihf
 
+    - name: List build directory
+      run: |
+        ls -l ./api/target/armv7-unknown-linux-musleabihf/release/
+
     - name: Prepare output directory
       run: |
         mkdir -p out
