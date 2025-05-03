@@ -37,7 +37,7 @@
 FROM rust:1.86 AS builder
 RUN cargo install cross
 WORKDIR /api
-COPY ./api .
+COPY api/ .
 RUN cross build --release --target armv7-unknown-linux-musleabihf
 
 # Final image
