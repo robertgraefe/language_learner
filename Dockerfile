@@ -42,12 +42,10 @@ RUN cargo install cross
 # Set working directory
 WORKDIR /app
 
-# Copy only the necessary files
-COPY api/Cargo.toml .
-#COPY api/Cargo.lock . 
-COPY api/src ./src
+COPY ./api /app
 
 # Run the build
+RUN apt update && apt install -y docker.io
 RUN cross build --release --target armv7-unknown-linux-musleabihf
 
 # Final image
