@@ -5,22 +5,19 @@ mod language_controller {
     use crate::models;
 
     #[axum::debug_handler]
-    pub async fn ping(Extension(pool): Extension<Graph>) -> axum::response::Response {
+    pub async fn ping() -> Json<bool> {
+        Json(true)
+    }
+
+    #[axum::debug_handler]
+    pub async fn ping_db(Extension(pool): Extension<Graph>) -> Json<bool> {
         let mut result = pool.execute(query("RETURN 1")).await.unwrap();
 
-        let value = result.next().await.unwrap();
-
-        if value.is_none() {
-            return axum::response::Response::builder()
-                .status(axum::http::StatusCode::INTERNAL_SERVER_ERROR)
-                .body(axum::body::Body::from("Neo4j is not reachable"))
-                .unwrap();
+        if result.next().await.unwrap().is_none() {
+            panic!("Neo4j is not reachable");
         }
 
-        axum::response::Response::builder()
-            .status(axum::http::StatusCode::OK)
-            .body(axum::body::Body::from("Pong"))
-            .unwrap()
+        Json(true)
     }
 
     #[axum::debug_handler]

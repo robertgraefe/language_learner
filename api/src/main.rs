@@ -2,9 +2,6 @@ mod database;
 mod models;
 mod router;
 
-// https://awesome-selfhosted.net/
-// https://www.youtube.com/watch?v=_gMzg77Qjm0&ab_channel=Let%27sGetRusty
-
 use dotenvy::dotenv;
 
 #[tokio::main]

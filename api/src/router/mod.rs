@@ -10,8 +10,9 @@ mod router {
 
     pub async fn start(graph: Graph) {
         let app = Router::new()
-            .route("/", get(language_controller::ping))
-            .route("/words", get(language_controller::get_words))
+            .route("/api/ping", get(language_controller::ping))
+            .route("/api/ping/db", get(language_controller::ping_db))
+            .route("/api/words", get(language_controller::get_words))
             .layer(Extension(graph))
             .layer(
                 TraceLayer::new_for_http()
