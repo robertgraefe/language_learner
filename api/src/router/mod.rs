@@ -3,7 +3,10 @@ mod language_controller;
 mod router {
 
     use crate::router::language_controller;
-    use axum::{Extension, Router, routing::get};
+    use axum::{
+        Extension, Router,
+        routing::{get, put},
+    };
     use neo4rs::Graph;
     use tower_http::trace::TraceLayer;
     use tracing::Level;
@@ -13,6 +16,14 @@ mod router {
             .route("/api/ping", get(language_controller::ping))
             .route("/api/ping/db", get(language_controller::ping_db))
             .route("/api/words", get(language_controller::get_words))
+            .route(
+                "/api/translation",
+                put(language_controller::upsert_translation),
+            )
+            .route(
+                "/api/translation/file",
+                put(language_controller::upsert_translation_file),
+            )
             .layer(Extension(graph))
             .layer(
                 TraceLayer::new_for_http()
