@@ -7,6 +7,7 @@ use std::sync::Arc;
 mod infrastructure;
 mod domain;
 mod application;
+mod interface;
 
 use dotenvy::dotenv;
 use infrastructure::neo4j::neo4j_repo::Neo4jWordsRepository;

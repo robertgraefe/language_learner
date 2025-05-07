@@ -1,12 +1,17 @@
 
+use axum::http::StatusCode;
 use neo4rs::{Graph, query};
 use anyhow::Result;
 use async_trait::async_trait;
 
-use crate::{application::traits::WordRepository, domain::models::Word};
+use crate::{application::traits::{TranslationRepository, WordRepository}, domain::models::{translation, Translation, Word}};
 
 pub struct Neo4jWordsRepository {
     pub graph: Graph,
+}
+
+pub struct  Neo4jTranslaionRepository{
+    pub graph: Graph
 }
 
 #[async_trait]
@@ -24,5 +29,12 @@ impl WordRepository for Neo4jWordsRepository {
 
             Ok(words)
     
+    }
+}
+
+#[async_trait]
+impl TranslationRepository for Neo4jTranslaionRepository {
+    async fn upsert(&self, translation: Translation){
+        self.graph.run(query(&translation.to_query())).await.unwrap();
     }
 }

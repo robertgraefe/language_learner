@@ -9,6 +9,7 @@ pub trait WordRepository {
     async fn get_all(&self) -> Result<Vec<Word>>;
 }
 
+#[async_trait]
 pub trait  TranslationRepository {
-    async fn upsert(&self, translation: Translation) -> Result<StatusCode>;
+    async fn upsert(&self, translation: Translation);
 }
