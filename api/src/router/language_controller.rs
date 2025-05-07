@@ -4,7 +4,7 @@ mod language_controller {
     use neo4rs::{Graph, query};
     use serde_json::Value;
 
-    use crate::models::{self};
+
 
     #[axum::debug_handler]
     pub async fn ping() -> Json<bool> {
@@ -22,6 +22,7 @@ mod language_controller {
         Json(true)
     }
 
+    /*
     #[axum::debug_handler]
     pub async fn get_words(Extension(pool): Extension<Graph>) -> Json<Vec<models::Word>> {
         let mut result = pool.execute(query("MATCH (n) RETURN n")).await.unwrap();
@@ -34,7 +35,9 @@ mod language_controller {
         }
         Json(words)
     }
+    */
 
+    /*
     #[axum::debug_handler]
     pub async fn upsert_translation(
         Extension(pool): Extension<Graph>,
@@ -50,7 +53,9 @@ mod language_controller {
 
         Json(true)
     }
+    */
 
+    /*
     #[axum::debug_handler]
     pub async fn upsert_translation_file(
         Extension(pool): Extension<Graph>,
@@ -75,7 +80,9 @@ mod language_controller {
 
         return upsert_translation(Extension(pool), Json(file_data)).await;
     }
+ */
 
+    /*
     fn get_translation(value: Value) -> Vec<models::Translation> {
         let translations = if let Value::Array(array) = value {
             array
@@ -94,6 +101,7 @@ mod language_controller {
         };
         return translations;
     }
+     */
 }
 
 pub use language_controller::*;

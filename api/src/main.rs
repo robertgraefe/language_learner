@@ -1,8 +1,15 @@
 mod database;
-mod models;
 mod router;
+mod routes;
+
+use std::sync::Arc;
+
+mod infrastructure;
+mod domain;
+mod application;
 
 use dotenvy::dotenv;
+use infrastructure::neo4j::neo4j_repo::Neo4jWordsRepository;
 
 #[tokio::main]
 async fn main() {
@@ -15,5 +22,7 @@ async fn main() {
 
     let graph = database::connect().await;
 
-    router::start(graph).await;
+    let repo = Arc::new(Neo4jWordsRepository { graph });
+
+    let app = routes::app(repo);
 }

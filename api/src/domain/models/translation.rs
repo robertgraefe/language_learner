@@ -1,10 +1,6 @@
-#[derive(serde::Deserialize, serde::Serialize, Debug)]
-pub struct Word {
-    pub language: String,
-    pub text: String,
-}
+use serde::{Deserialize, Serialize};
 
-#[derive(serde::Deserialize, serde::Serialize, Debug)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Translation {
     pub id: String,
     pub en: String,
