@@ -1,6 +1,5 @@
-use async_trait::async_trait;
 use anyhow::Result;
-use axum::http::StatusCode;
+use async_trait::async_trait;
 
 use crate::domain::models::{Translation, Word};
 
@@ -10,6 +9,6 @@ pub trait WordRepository {
 }
 
 #[async_trait]
-pub trait  TranslationRepository {
+pub trait TranslationRepository {
     async fn upsert(&self, translation: Translation);
 }

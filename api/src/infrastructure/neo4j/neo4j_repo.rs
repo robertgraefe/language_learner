@@ -1,40 +1,73 @@
+use std::sync::Arc;
 
-use axum::http::StatusCode;
-use neo4rs::{Graph, query};
 use anyhow::Result;
 use async_trait::async_trait;
+use neo4rs::{Graph, query};
 
-use crate::{application::traits::{TranslationRepository, WordRepository}, domain::models::{translation, Translation, Word}};
+use crate::{
+    application::traits::{TranslationRepository, WordRepository},
+    domain::models::{Translation, Word},
+};
 
-pub struct Neo4jWordsRepository {
-    pub graph: Graph,
+#[derive(Clone)]
+pub struct Neo4jRepository {
+    pub graph: Arc<Graph>,
 }
 
-pub struct  Neo4jTranslaionRepository{
-    pub graph: Graph
+impl Neo4jRepository {
+    pub fn new(graph: Arc<Graph>) -> Self {
+        Self { graph }
+    }
+}
+
+pub struct Neo4jWordsRepository {
+    pub base: Arc<Neo4jRepository>,
+}
+
+impl Neo4jWordsRepository {
+    pub fn new(base: Arc<Neo4jRepository>) -> Self {
+        Self { base }
+    }
+}
+
+pub struct Neo4jTranslationRepository {
+    pub base: Arc<Neo4jRepository>,
+}
+
+impl Neo4jTranslationRepository {
+    pub fn new(base: Arc<Neo4jRepository>) -> Self {
+        Self { base }
+    }
 }
 
 #[async_trait]
 impl WordRepository for Neo4jWordsRepository {
     async fn get_all(&self) -> Result<Vec<Word>> {
+        let mut result = self
+            .base
+            .graph
+            .execute(query("MATCH (n) RETURN n"))
+            .await
+            .unwrap();
 
-            let mut result = self.graph.execute(query("MATCH (n) RETURN n")).await.unwrap();
+        let mut words = Vec::new();
 
-            let mut words = Vec::new();
-    
-            while let Ok(Some(row)) = result.next().await {
-                let word: Word = row.get("n").unwrap();
-                words.push(word);
-            }
+        while let Ok(Some(row)) = result.next().await {
+            let word: Word = row.get("n").unwrap();
+            words.push(word);
+        }
 
-            Ok(words)
-    
+        Ok(words)
     }
 }
 
 #[async_trait]
-impl TranslationRepository for Neo4jTranslaionRepository {
-    async fn upsert(&self, translation: Translation){
-        self.graph.run(query(&translation.to_query())).await.unwrap();
+impl TranslationRepository for Neo4jTranslationRepository {
+    async fn upsert(&self, translation: Translation) {
+        self.base
+            .graph
+            .run(query(&translation.to_query()))
+            .await
+            .unwrap();
     }
 }

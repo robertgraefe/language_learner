@@ -1,16 +1,17 @@
 mod database;
-mod router;
-mod routes;
-
 use std::sync::Arc;
 
-mod infrastructure;
-mod domain;
 mod application;
+mod domain;
+mod infrastructure;
 mod interface;
+mod routes;
 
+use crate::infrastructure::neo4j::neo4j_repo::Neo4jRepository;
+use crate::infrastructure::neo4j::neo4j_repo::Neo4jWordsRepository;
+use axum::Router;
 use dotenvy::dotenv;
-use infrastructure::neo4j::neo4j_repo::Neo4jWordsRepository;
+use infrastructure::neo4j::neo4j_repo::Neo4jTranslationRepository;
 
 #[tokio::main]
 async fn main() {
@@ -21,9 +22,20 @@ async fn main() {
 
     dotenv().ok();
 
-    let graph = database::connect().await;
+    let graph = Arc::new(database::connect().await);
 
-    let repo = Arc::new(Neo4jWordsRepository { graph });
+    let base_repo = Arc::new(Neo4jRepository::new(graph));
+    let word_repo = Arc::new(Neo4jWordsRepository::new(base_repo.clone()));
+    let translation_repo = Arc::new(Neo4jTranslationRepository::new(base_repo.clone()));
 
-    let app = routes::app(repo);
+    let app = Router::new()
+        .nest("/api", routes::ping::ping_routes(base_repo))
+        .nest("/api", routes::words::word_routes(word_repo))
+        .nest(
+            "/api",
+            routes::translation::translation_routes(translation_repo),
+        );
+
+    let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await.unwrap();
+    axum::serve(listener, app).await.unwrap();
 }
