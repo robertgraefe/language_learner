@@ -1,7 +1,10 @@
 use anyhow::Result;
 use async_trait::async_trait;
 
-use crate::domain::models::{Translation, Word};
+use crate::{
+    domain::models::{Translation, Word},
+    interface::errors::app_error::AppError,
+};
 
 #[async_trait]
 pub trait WordRepository {
@@ -10,5 +13,5 @@ pub trait WordRepository {
 
 #[async_trait]
 pub trait TranslationRepository {
-    async fn upsert(&self, translation: Translation);
+    async fn upsert(&self, translation: Translation) -> Result<(), AppError>;
 }

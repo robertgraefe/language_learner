@@ -8,7 +8,7 @@ use axum::{
 
 use crate::{
     application::traits::TranslationRepository,
-    interface::dtos::translation_dto::UpsertTranslationInput,
+    interface::{dtos::translation_dto::UpsertTranslationInput, errors::app_error::AppError},
 };
 
 use super::upsert_translation_handler;
@@ -16,7 +16,7 @@ use super::upsert_translation_handler;
 pub async fn upsert_translation_file_handler<R: TranslationRepository>(
     State(repo): State<Arc<R>>,
     mut multipart: Multipart,
-) -> Result<StatusCode, StatusCode> {
+) -> Result<StatusCode, AppError> {
     let mut dto_opt: Option<UpsertTranslationInput> = None;
 
     while let Some(field) = multipart.next_field().await.unwrap() {
@@ -25,17 +25,7 @@ pub async fn upsert_translation_file_handler<R: TranslationRepository>(
                 let bytes = field.bytes().await.unwrap();
 
                 // Try to deserialize directly into your DTO
-                match serde_json::from_slice::<UpsertTranslationInput>(&bytes) {
-                    Ok(dto) => {
-                        dto_opt = Some(dto);
-                    }
-                    Err(e) => {
-                        eprintln!("Failed to parse DTO: {:?}", e);
-                        return Err(StatusCode::BAD_REQUEST);
-                    }
-                }
-
-                break; // Assuming only one file field
+                dto_opt = Some(serde_json::from_slice::<UpsertTranslationInput>(&bytes)?);
             }
         }
     }
@@ -45,5 +35,5 @@ pub async fn upsert_translation_file_handler<R: TranslationRepository>(
         return upsert_translation_handler(State(repo), Json(dto)).await;
     }
 
-    Err(StatusCode::BAD_REQUEST)
+    Err(AppError::new_status(StatusCode::BAD_REQUEST))
 }

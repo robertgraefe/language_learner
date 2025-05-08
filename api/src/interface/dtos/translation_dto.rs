@@ -1,6 +1,6 @@
 use serde::Deserialize;
 
-use crate::domain::models::Translation;
+use crate::{domain::models::Translation, interface::errors::app_error::AppError};
 
 #[derive(Debug, Deserialize)]
 #[serde(untagged)]
@@ -17,9 +17,12 @@ pub struct TranslationDto {
 }
 
 impl TranslationDto {
-    pub fn to_domain(self) -> Result<Translation, &'static str> {
+    pub fn to_domain(self) -> Result<Translation, AppError> {
         if self.id.trim().is_empty() || self.en.trim().is_empty() || self.de.trim().is_empty() {
-            return Err("Translation is missing the property ${self.if}");
+            return Err(AppError::new(
+                axum::http::StatusCode::UNPROCESSABLE_ENTITY,
+                "All fields must be non-empty",
+            ));
         }
 
         Ok(Translation {

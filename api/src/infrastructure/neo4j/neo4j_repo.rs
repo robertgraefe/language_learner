@@ -1,12 +1,13 @@
 use std::sync::Arc;
 
-use anyhow::Result;
+use anyhow::{Context, Result};
 use async_trait::async_trait;
 use neo4rs::{Graph, query};
 
 use crate::{
     application::traits::{TranslationRepository, WordRepository},
     domain::models::{Translation, Word},
+    interface::errors::app_error::AppError,
 };
 
 #[derive(Clone)]
@@ -48,12 +49,12 @@ impl WordRepository for Neo4jWordsRepository {
             .graph
             .execute(query("MATCH (n) RETURN n"))
             .await
-            .unwrap();
+            .context("Failed to execute query")?;
 
         let mut words = Vec::new();
 
         while let Ok(Some(row)) = result.next().await {
-            let word: Word = row.get("n").unwrap();
+            let word: Word = row.get("n").context("Could not get words")?;
             words.push(word);
         }
 
@@ -63,11 +64,12 @@ impl WordRepository for Neo4jWordsRepository {
 
 #[async_trait]
 impl TranslationRepository for Neo4jTranslationRepository {
-    async fn upsert(&self, translation: Translation) {
+    async fn upsert(&self, translation: Translation) -> Result<(), AppError> {
         self.base
             .graph
             .run(query(&translation.to_query()))
             .await
-            .unwrap();
+            .context("Failed to execute query")?;
+        Ok(())
     }
 }

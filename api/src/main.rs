@@ -9,9 +9,13 @@ mod routes;
 
 use crate::infrastructure::neo4j::neo4j_repo::Neo4jRepository;
 use crate::infrastructure::neo4j::neo4j_repo::Neo4jWordsRepository;
+use crate::middlewares::error_middleware::error_middleware;
+
 use axum::Router;
+use axum::middleware::from_fn;
 use dotenvy::dotenv;
 use infrastructure::neo4j::neo4j_repo::Neo4jTranslationRepository;
+use interface::middlewares;
 
 #[tokio::main]
 async fn main() {
@@ -34,7 +38,8 @@ async fn main() {
         .nest(
             "/api",
             routes::translation::translation_routes(translation_repo),
-        );
+        )
+        .layer(from_fn(error_middleware));
 
     let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await.unwrap();
     axum::serve(listener, app).await.unwrap();
