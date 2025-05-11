@@ -1,4 +1,4 @@
-mod database;
+
 use std::sync::Arc;
 
 mod application;
@@ -6,6 +6,7 @@ mod domain;
 mod infrastructure;
 mod interface;
 mod routes;
+mod database;
 
 use crate::infrastructure::neo4j::neo4j_repo::Neo4jRepository;
 use crate::infrastructure::neo4j::neo4j_repo::Neo4jWordsRepository;
@@ -13,6 +14,7 @@ use crate::middlewares::error_middleware::error_middleware;
 
 use axum::Router;
 use axum::middleware::from_fn;
+use database::migrations::run_migrations;
 use dotenvy::dotenv;
 use infrastructure::neo4j::neo4j_repo::Neo4jTranslationRepository;
 use interface::middlewares;
@@ -27,6 +29,10 @@ async fn main() {
     dotenv().ok();
 
     let graph = Arc::new(database::connect().await);
+
+    if let Err(e) = run_migrations(&graph).await {
+        eprintln!("Migration error: {:?}", e);
+    }
 
     let base_repo = Arc::new(Neo4jRepository::new(graph));
     let word_repo = Arc::new(Neo4jWordsRepository::new(base_repo.clone()));
