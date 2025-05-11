@@ -11,27 +11,38 @@ impl Translation {
     pub fn to_query(&self) -> String {
         let mut query = String::new();
 
+        query.push_str("MATCH (en_l:Language {{code: 'en', name: 'English'}})\n");
+        query.push_str("MATCH (id_l:Language {{code: 'id', name: 'Indonesian'}})\n");
+        query.push_str("MATCH (de_l:Language {{code: 'de', name: 'German'}})\n");
+
         query.push_str(&format!(
-            "MERGE (id:Word {{text: '{}', language: 'id'}})\n",
+            "MERGE (id_w:Word {{text: '{}'}})\n",
             self.id
         ));
+
         query.push_str(&format!(
-            "MERGE (en:Word {{text: '{}', language: 'en'}})\n",
+            "MERGE (en_w:Word {{text: '{}'}})\n",
             self.en
         ));
+
         query.push_str(&format!(
-            "MERGE (de:Word {{text: '{}', language: 'de'}})\n",
+            "MERGE (de_w:Word {{text: '{}'}})\n",
             self.de
         ));
 
-        query.push_str("MERGE (id)-[:TRANSLATES_TO]->(en)\n");
-        query.push_str("MERGE (id)-[:TRANSLATES_TO]->(de)\n");
+        query.push_str("MERGE (c:Concept)\n");
 
-        query.push_str("MERGE (en)-[:TRANSLATES_TO]->(id)\n");
-        query.push_str("MERGE (en)-[:TRANSLATES_TO]->(de)\n");
+        query.push_str("MERGE (en_w)-[:HAS_LANGUAGE]->(en_l)\n");
+        query.push_str("MERGE (id_w)-[:HAS_LANGUAGE]->(id_l)\n");
+        query.push_str("MERGE (de_w)-[:HAS_LANGUAGE]->(de_l)\n");
 
-        query.push_str("MERGE (de)-[:TRANSLATES_TO]->(id)\n");
-        query.push_str("MERGE (de)-[:TRANSLATES_TO]->(en)\n");
+        query.push_str("MERGE (id_w)-[:TRANSLATES_TO]-(en_w)\n");
+        query.push_str("MERGE (id_w)-[:TRANSLATES_TO]-(de_w)\n");
+        query.push_str("MERGE (de_w)-[:TRANSLATES_TO]-(en_w)\n");
+
+        query.push_str("MERGE (de_w)-[:EXPRESSES]->(c)\n");
+        query.push_str("MERGE (id_w)-[:EXPRESSES]->(c)\n");
+        query.push_str("MERGE (en_w)-[:EXPRESSES]->(c)\n");
 
         return query;
     }
