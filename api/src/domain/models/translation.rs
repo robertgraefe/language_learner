@@ -21,7 +21,7 @@ impl Translation {
 
         query.push_str(&format!("MERGE (de_w:Word {{text: '{}'}})\n", self.de));
 
-        query.push_str("MERGE (c:Concept)\n");
+        query.push_str("CREATE (c:Concept)\n");
 
         query.push_str("MERGE (en_w)-[:HAS_LANGUAGE]->(en_l)\n");
         query.push_str("MERGE (id_w)-[:HAS_LANGUAGE]->(id_l)\n");

@@ -1,12 +1,11 @@
-
 use std::sync::Arc;
 
 mod application;
+mod database;
 mod domain;
 mod infrastructure;
 mod interface;
 mod routes;
-mod database;
 
 use crate::infrastructure::neo4j::neo4j_repo::Neo4jRepository;
 use crate::infrastructure::neo4j::neo4j_repo::Neo4jWordsRepository;
@@ -18,6 +17,7 @@ use database::migrations::run_migrations;
 use dotenvy::dotenv;
 use infrastructure::neo4j::neo4j_repo::Neo4jTranslationRepository;
 use interface::middlewares;
+use tracing::info;
 
 #[tokio::main]
 async fn main() {
@@ -48,5 +48,8 @@ async fn main() {
         .layer(from_fn(error_middleware));
 
     let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await.unwrap();
+
+    info!("Server started...");
+
     axum::serve(listener, app).await.unwrap();
 }

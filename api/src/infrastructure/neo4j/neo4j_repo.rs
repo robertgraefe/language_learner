@@ -1,4 +1,4 @@
-use std::sync::Arc;
+use std::{collections::HashMap, sync::Arc};
 
 use anyhow::{Context, Result};
 use async_trait::async_trait;
@@ -46,8 +46,6 @@ impl Neo4jTranslationRepository {
 #[async_trait]
 impl WordRepository for Neo4jWordsRepository {
     async fn get_all(&self) -> Result<Vec<Word>, AppError> {
-        use tracing::error; // or use log::error;
-
         let query_str = "MATCH (n:Word) RETURN n";
 
         let mut result = match self.base.graph.execute(query(query_str)).await {
@@ -123,5 +121,70 @@ impl TranslationRepository for Neo4jTranslationRepository {
             .context("Failed to execute delete concepts query")?;
 
         Ok(())
+    }
+
+    async fn get_all(&self) -> Result<Vec<Translation>, AppError> {
+        let query_str = r#"
+            MATCH (w:Word)-[:EXPRESSES]->(c:Concept)
+            MATCH (w)-[:HAS_LANGUAGE]->(l:Language)
+            WITH c, collect([l.code, w.text]) AS lang_word_pairs
+            RETURN lang_word_pairs
+        "#;
+
+        let mut result = match self.base.graph.execute(query(query_str)).await {
+            Ok(res) => res,
+            Err(e) => {
+                error!("Match Translations Query failed: '{}': {:?}", query_str, e);
+                return Err(AppError::new(
+                    StatusCode::BAD_REQUEST,
+                    "Failed to execute query",
+                ));
+            }
+        };
+
+        let mut translation_groups: Vec<HashMap<String, String>> = Vec::new();
+
+        while let Ok(Some(row)) = result.next().await {
+            match row.get::<Vec<Vec<String>>>("lang_word_pairs") {
+                Ok(pairs) => {
+                    let mut map = HashMap::new();
+                    for pair in pairs {
+                        if pair.len() == 2 {
+                            map.insert(pair[0].clone(), pair[1].clone());
+                        } else {
+                            error!("Unexpected pair format in row: {:?}", pair);
+                            return Err(AppError::new(
+                                StatusCode::BAD_REQUEST,
+                                "Invalid translation pair",
+                            ));
+                        }
+                    }
+                    translation_groups.push(map);
+                }
+                Err(e) => {
+                    error!(
+                        "Failed to get 'lang_word_pairs' from row: {:?}, error: {:?}",
+                        row, e
+                    );
+                    return Err(AppError::new(
+                        StatusCode::BAD_REQUEST,
+                        "Failed to process query result",
+                    ));
+                }
+            }
+        }
+
+        let mut translations: Vec<Translation> = Vec::new();
+
+        for map in translation_groups {
+            // Extract values safely, or default to empty strings
+            let id = map.get("id").cloned().unwrap_or_default();
+            let en = map.get("en").cloned().unwrap_or_default();
+            let de = map.get("de").cloned().unwrap_or_default();
+
+            translations.push(Translation { id, en, de });
+        }
+
+        Ok(translations)
     }
 }
