@@ -36,7 +36,7 @@ class ContextService extends ChangeNotifier {
 
     try {
       final response = await http.get(
-        Uri.parse('http://165.232.124.109:3000/api/words'),
+        Uri.parse('http://165.232.124.109:3000/api/translation/all'),
       );
       if (response.statusCode == 200) {
         final List<dynamic> jsonData = json.decode(response.body);
