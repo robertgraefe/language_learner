@@ -1,8 +1,9 @@
-mod database {
 
-    use neo4rs::{ConfigBuilder, Graph};
+pub mod migrations;
 
-    pub async fn connect() -> Graph {
+use neo4rs::{ConfigBuilder, Graph};
+
+pub async fn connect() -> Graph {
         // Load environment variables from .env file
         let uri = std::env::var("NEO4J_URI").expect("NEO4J_URI environment variable not set");
         let user = std::env::var("NEO4J_USER").expect("NEO4J_USER environment variable not set");
@@ -25,6 +26,4 @@ mod database {
 
         return graph;
     }
-}
 
-pub use database::*;

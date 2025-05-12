@@ -72,4 +72,23 @@ impl TranslationRepository for Neo4jTranslationRepository {
             .context("Failed to execute query")?;
         Ok(())
     }
+
+    async fn delete_all(&self) -> Result<(), AppError> {
+
+        let query_str: &str = r#"
+            MATCH (w:Word)
+            DETACH DELETE w;
+            
+            MATCH (c:Concept)
+            DETACH DELETE c;
+        "#;
+
+
+        self.base
+            .graph
+            .run(query(query_str))
+            .await
+            .context("Failed to execute query")?;
+        Ok(())
+    }
 }
