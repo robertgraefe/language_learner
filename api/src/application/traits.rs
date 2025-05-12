@@ -8,9 +8,8 @@ use crate::{
 
 #[async_trait]
 pub trait WordRepository {
-    async fn get_all(&self) -> Result<Vec<Word>>;
+    async fn get_all(&self) -> Result<Vec<Word>, AppError>;
 }
-
 
 #[async_trait]
 pub trait TranslationRepository {

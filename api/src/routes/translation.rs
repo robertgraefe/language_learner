@@ -1,8 +1,13 @@
 use crate::{
     application::traits::TranslationRepository,
-    interface::handlers::{delete_translation_all_handler, upsert_translation_file_handler, upsert_translation_handler},
+    interface::handlers::{
+        delete_translation_all_handler, upsert_translation_file_handler, upsert_translation_handler,
+    },
 };
-use axum::{routing::{delete, put}, Router};
+use axum::{
+    Router,
+    routing::{delete, put},
+};
 use std::sync::Arc;
 
 pub fn translation_routes<R: TranslationRepository + Send + Sync + 'static>(
@@ -14,6 +19,9 @@ pub fn translation_routes<R: TranslationRepository + Send + Sync + 'static>(
             "/translation/file",
             put(upsert_translation_file_handler::<R>),
         )
-        .route("translation/delete/all", delete(delete_translation_all_handler))
+        .route(
+            "/translation/delete/all",
+            delete(delete_translation_all_handler),
+        )
         .with_state(repo)
 }

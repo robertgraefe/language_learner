@@ -1,24 +1,41 @@
 use chrono::Utc;
-use neo4rs::{query, Graph};
+use neo4rs::{Graph, query};
 use std::sync::Arc;
 
 pub async fn run_migrations(graph: &Arc<Graph>) -> Result<(), neo4rs::Error> {
     let migrations = vec![
-        ("11052025_1_create_initial_languages", r#"
-            MATCH (en:Language {code: 'en', name: 'English'})
-            MATCH (id:Language {code: 'id', name: 'Indonesian'})
-            MATCH (de:Language {code: 'de', name: 'German'})
-            
+        (
+            "11052025_1_create_english",
+            r#"
+            MERGE (en:Language {code: 'en', name: 'English'});
+        "#,
+        ),
+        (
+            "11052025_2_create_indonesian",
+            r#"
+            MERGE (id:Language {code: 'id', name: 'Indonesian'});
+        "#,
+        ),
+        (
+            "11052025_3_create_german",
+            r#"
+            MERGE (de:Language {code: 'de', name: 'German'});
+        "#,
+        ),
+        (
+            "11052025_4_create_language_name_unique_constraint",
+            r#"            
             CREATE CONSTRAINT unique_language_name IF NOT EXISTS
             FOR (l:Language) REQUIRE l.name IS UNIQUE;
+        "#,
+        ),
+        (
+            "11052025_5_create_language_code_unique_constraint",
+            r#"
             CREATE CONSTRAINT unique_language_code IF NOT EXISTS
             FOR (l:Language) REQUIRE l.code IS UNIQUE;
-        "#),
-
-        ("11052025_2_create_unique_words", r#"          
-            CREATE CONSTRAINT unique_word_text IF NOT EXISTS
-            FOR (w:Word) REQUIRE w.text IS UNIQUE;
-        "#),
+        "#,
+        ),
     ];
 
     for (name, cypher) in migrations {
@@ -33,7 +50,9 @@ pub async fn run_migrations(graph: &Arc<Graph>) -> Result<(), neo4rs::Error> {
 }
 
 async fn migration_applied(graph: &Arc<Graph>, name: &str) -> Result<bool, neo4rs::Error> {
-    let mut result = graph.execute(query("MATCH (m:Migration {name: $name}) RETURN m").param("name", name)).await?;
+    let mut result = graph
+        .execute(query("MATCH (m:Migration {name: $name}) RETURN m").param("name", name))
+        .await?;
     Ok(result.next().await?.is_some())
 }
 

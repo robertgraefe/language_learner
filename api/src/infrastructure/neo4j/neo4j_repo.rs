@@ -2,7 +2,9 @@ use std::sync::Arc;
 
 use anyhow::{Context, Result};
 use async_trait::async_trait;
+use axum::http::StatusCode;
 use neo4rs::{Graph, query};
+use tracing::error;
 
 use crate::{
     application::traits::{TranslationRepository, WordRepository},
@@ -43,19 +45,40 @@ impl Neo4jTranslationRepository {
 
 #[async_trait]
 impl WordRepository for Neo4jWordsRepository {
-    async fn get_all(&self) -> Result<Vec<Word>> {
-        let mut result = self
-            .base
-            .graph
-            .execute(query("MATCH (n) RETURN n"))
-            .await
-            .context("Failed to execute query")?;
+    async fn get_all(&self) -> Result<Vec<Word>, AppError> {
+        use tracing::error; // or use log::error;
+
+        let query_str = "MATCH (n:Word) RETURN n";
+
+        let mut result = match self.base.graph.execute(query(query_str)).await {
+            Ok(res) => res,
+            Err(e) => {
+                error!("Match Words Query failed: '{}': {:?}", query_str, e);
+                return Err(AppError::new(
+                    StatusCode::BAD_REQUEST,
+                    "Failed to execute query",
+                ));
+            }
+        };
 
         let mut words = Vec::new();
 
         while let Ok(Some(row)) = result.next().await {
-            let word: Word = row.get("n").context("Could not get words")?;
-            words.push(word);
+            match row.get("n") {
+                Ok(word) => {
+                    words.push(word);
+                }
+                Err(e) => {
+                    // Log the error with the query context
+                    error!("Failed to get 'n' from row: {:?}, error: {:?}", row, e);
+
+                    // Return the error with additional context
+                    return Err(AppError::new(
+                        StatusCode::BAD_REQUEST,
+                        "Failed to execute query",
+                    ));
+                }
+            }
         }
 
         Ok(words)
@@ -65,30 +88,40 @@ impl WordRepository for Neo4jWordsRepository {
 #[async_trait]
 impl TranslationRepository for Neo4jTranslationRepository {
     async fn upsert(&self, translation: Translation) -> Result<(), AppError> {
-        self.base
-            .graph
-            .run(query(&translation.to_query()))
-            .await
-            .context("Failed to execute query")?;
+        if let Err(e) = self.base.graph.run(query(&translation.to_query())).await {
+            error!("Neo4j upsert failed: {:?}", e); // Logs the raw error
+            return Err(AppError::new(
+                StatusCode::BAD_REQUEST,
+                "Failed to execute query",
+            ));
+        }
+
         Ok(())
     }
 
     async fn delete_all(&self) -> Result<(), AppError> {
-
-        let query_str: &str = r#"
+        let delete_words_query: &str = r#"
             MATCH (w:Word)
             DETACH DELETE w;
-            
+        "#;
+
+        self.base
+            .graph
+            .run(query(delete_words_query))
+            .await
+            .context("Failed to execute delete words query")?;
+
+        let delete_concepts_query: &str = r#"
             MATCH (c:Concept)
             DETACH DELETE c;
         "#;
 
-
         self.base
             .graph
-            .run(query(query_str))
+            .run(query(delete_concepts_query))
             .await
-            .context("Failed to execute query")?;
+            .context("Failed to execute delete concepts query")?;
+
         Ok(())
     }
 }
