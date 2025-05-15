@@ -1,3 +1,4 @@
+use std::net::SocketAddr;
 use std::sync::Arc;
 
 mod application;
@@ -18,6 +19,7 @@ use dotenvy::dotenv;
 use infrastructure::neo4j::neo4j_repo::Neo4jTranslationRepository;
 use interface::middlewares;
 use tracing::info;
+use axum_server::tls_rustls::RustlsConfig;
 
 #[tokio::main]
 async fn main() {
@@ -27,6 +29,8 @@ async fn main() {
         .init();
 
     dotenv().ok();
+
+    rustls::crypto::ring::default_provider().install_default().expect("Failed to install rustls crypto provider");
 
     let graph = Arc::new(database::connect().await);
 
@@ -47,9 +51,25 @@ async fn main() {
         )
         .layer(from_fn(error_middleware));
 
-    let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await.unwrap();
+    //let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await.unwrap();
 
-    info!("Server started...");
+    //info!("Server started...");
 
-    axum::serve(listener, app).await.unwrap();
+    //axum::serve(listener, app).await.unwrap();
+
+    let config = RustlsConfig::from_pem_file(
+        "assets/cert.pem",
+        "assets/key.pem",
+    )
+    .await
+    .unwrap();
+
+    let addr = SocketAddr::from(([0, 0, 0, 0], 3000));
+
+    println!("https listening on {}", addr);
+
+    let _ = axum_server_dual_protocol::bind_dual_protocol(addr, config)
+	.serve(app.into_make_service())
+	.await;
+
 }
