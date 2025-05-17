@@ -30,7 +30,7 @@ async fn main() {
 
     dotenv().ok();
 
-    rustls::crypto::ring::default_provider().install_default().expect("Failed to install rustls crypto provider");
+    //rustls::crypto::ring::default_provider().install_default().expect("Failed to install rustls crypto provider");
 
     let graph = Arc::new(database::connect().await);
 
@@ -51,12 +51,13 @@ async fn main() {
         )
         .layer(from_fn(error_middleware));
 
-    //let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await.unwrap();
+    let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await.unwrap();
 
-    //info!("Server started...");
+    info!("Server started...");
 
-    //axum::serve(listener, app).await.unwrap();
+    axum::serve(listener, app).await.unwrap();
 
+    /*
     let config = RustlsConfig::from_pem_file(
         "assets/cert.pem",
         "assets/key.pem",
@@ -71,5 +72,6 @@ async fn main() {
     let _ = axum_server_dual_protocol::bind_dual_protocol(addr, config)
 	.serve(app.into_make_service())
 	.await;
+ */
 
 }
