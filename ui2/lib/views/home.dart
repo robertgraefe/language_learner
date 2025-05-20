@@ -11,13 +11,15 @@ class HomePage extends StatelessWidget {
   Widget build(BuildContext context) {
     if (ScreenSize.isPhone(context)) {
       return Scaffold(
-        body: Scaffold(
-          body: LearningPage(),
-          bottomNavigationBar: NavigationBottomBar(),
-        ),
+        body: Column(children: [Expanded(child: LearningPage())]),
+        bottomNavigationBar: NavigationBottomBar(),
       );
     }
 
-    return Scaffold(body: Row(children: [NavigationSidebar(), LearningPage()]));
+    return Scaffold(
+      body: Row(
+        children: [NavigationSidebar(), Expanded(child: LearningPage())],
+      ),
+    );
   }
 }
