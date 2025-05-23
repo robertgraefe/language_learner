@@ -3,15 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ui2/models/sample.dart';
 import 'package:ui2/models/translation.dart';
-import 'package:ui2/services/translation_service.dart';
+import 'package:ui2/viewmodels/translations_view_model.dart';
 
-final learningViewModelProvider =
-    AsyncNotifierProvider<LearningViewModel, List<Translation>>(
-      LearningViewModel.new,
-    );
-final translationServiceProvider = Provider<TranslationService>(
-  (ref) => TranslationService(),
+final learningViewModelProvider = NotifierProvider<LearningViewModel, void>(
+  LearningViewModel.new,
 );
+
 final currentSampleProvider = StateProvider<Sample?>((ref) => null);
 final translationHistoryProvider = StateProvider<TranslationHistoryState>(
   (ref) => TranslationHistoryState(),
@@ -22,35 +19,28 @@ class TranslationHistoryState {
   List<Translation> history = [];
 }
 
-class LearningViewModel extends AsyncNotifier<List<Translation>> {
+class LearningViewModel extends Notifier<void> {
   Sample? currentSample;
-  List<Translation> translations = [];
   List<Translation> translationHistory = [];
-  bool? isCorrect;
   GlobalKey? historyListKey;
 
   @override
-  Future<List<Translation>> build() async {
-    final translationService = ref.read(translationServiceProvider);
-    translations = await translationService.getTranslations();
-    fetchSample();
-    return translations;
-  }
-
-  Future<void> refresh() async {
-    state = const AsyncLoading();
-    final translationService = ref.read(translationServiceProvider);
-    state = await AsyncValue.guard(() => translationService.getTranslations());
+  void build() {
+    Future.microtask(() => fetchSample());
   }
 
   void fetchSample() {
+    final translations =
+        ref.read(translationsViewModelProvider).asData?.value ?? [];
+
     if (translations.isEmpty) return;
 
     if (currentSample != null) {
-      currentSample!.actual.isCorrect = isCorrect;
-      isCorrect = null; // Reset isCorrect for the new sample
-      translationHistory.insert(0, currentSample!.actual);
-      var animatedList = historyListKey?.currentState as AnimatedListState?;
+      currentSample!.actual.isCorrect = currentSample!.isSelectedCorrectly;
+
+      final historyState = ref.read(translationHistoryProvider.notifier).state;
+      historyState.history.insert(0, currentSample!.actual);
+      final animatedList = historyState.key?.currentState as AnimatedListState?;
       animatedList?.insertItem(0);
     }
 
@@ -75,12 +65,17 @@ class LearningViewModel extends AsyncNotifier<List<Translation>> {
     );
 
     ref.read(currentSampleProvider.notifier).state = currentSample;
+  }
 
-    final historyState = ref.read(translationHistoryProvider.notifier).state;
-    historyState.history.insert(0, currentSample!.actual);
+  void selectOption(String text, String actual) {
+    if (currentSample == null) {
+      return;
+    }
 
-    // Make sure you call insertItem on the key stored in the provider
-    final animatedList = historyState.key?.currentState as AnimatedListState?;
-    animatedList?.insertItem(0);
+    currentSample!.isSelectedCorrectly = text == actual;
+
+    if (currentSample!.isSelectedCorrectly!) {
+      fetchSample();
+    }
   }
 }

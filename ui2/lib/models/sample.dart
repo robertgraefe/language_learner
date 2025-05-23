@@ -7,6 +7,7 @@ class Sample {
   final Translation optionTwo;
   final Translation optionThree;
   final Translation optionFour;
+  bool? isSelectedCorrectly;
 
   Sample({
     required this.optionOne,

@@ -2,7 +2,7 @@ class Translation {
   final String id;
   final String en;
   final String de;
-  bool? isCorrect = null;
+  bool? isCorrect;
 
   Translation(this.id, this.en, this.de);
 

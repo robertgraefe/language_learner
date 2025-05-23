@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:ui2/utils/ScreenSize.dart';
-import 'package:ui2/views/learning/learning_page.dart';
+import 'package:ui2/views/learning/learning_page/learning_page.dart';
 import 'package:ui2/views/navigation/navigation_bottombar.dart';
 import 'package:ui2/views/navigation/navigation_sidebar.dart';
 
