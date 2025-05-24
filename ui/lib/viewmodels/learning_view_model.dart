@@ -2,7 +2,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ui/models/sample.dart';
-import 'package:ui/models/translation.dart';
+import 'package:ui/models/translation_learning.dart';
 import 'package:ui/viewmodels/translations_view_model.dart';
 
 final learningViewModelProvider = NotifierProvider<LearningViewModel, void>(
@@ -16,12 +16,12 @@ final translationHistoryProvider = StateProvider<TranslationHistoryState>(
 
 class TranslationHistoryState {
   GlobalKey? key;
-  List<Translation> history = [];
+  List<TranslationLearning> history = [];
 }
 
 class LearningViewModel extends Notifier<void> {
   Sample? currentSample;
-  List<Translation> translationHistory = [];
+  List<TranslationLearning> translationHistory = [];
   GlobalKey? historyListKey;
 
   @override
@@ -34,6 +34,11 @@ class LearningViewModel extends Notifier<void> {
         ref.read(translationsViewModelProvider).asData?.value ?? [];
 
     if (translations.isEmpty) return;
+
+    final translationsLearning =
+        translations
+            .map((x) => TranslationLearning(id: x.id, de: x.de, en: x.en))
+            .toList();
 
     if (currentSample != null) {
       currentSample!.actual.isCorrect = currentSample!.isSelectedCorrectly;
@@ -50,7 +55,7 @@ class LearningViewModel extends Notifier<void> {
         translationHistory.where((x) => x.isCorrect == true).toList();
 
     final openGuesses =
-        translations
+        translationsLearning
             .where((x) => !correctGuessed.any((guessed) => guessed.id == x.id))
             .toList()
           ..shuffle(random);
@@ -72,9 +77,9 @@ class LearningViewModel extends Notifier<void> {
 
     if (sample == null) return;
 
-    sample.isSelectedCorrectly = text == actual;
+    sample.isSelectedCorrectly ??= text == actual;
 
-    if (currentSample!.isSelectedCorrectly!) {
+    if (text == actual) {
       fetchSample();
     }
   }

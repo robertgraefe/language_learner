@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:ui/views/home.dart';
+import 'package:ui/views/data/data_main.dart';
+import 'package:ui/views/learning/learning_main.dart';
 
 class NavigationItem {
   final IconData icon;
@@ -21,13 +22,13 @@ const List<NavigationItem> navigationItems = [
     route: "/data",
     icon: Icons.home,
     label: 'Data',
-    widget: HomePage(),
+    widget: DataMainPage(),
   ),
   NavigationItem(
     route: "/learning",
     icon: Icons.favorite,
     label: 'Learning',
-    widget: HomePage(),
+    widget: LearningMainPage(),
   ),
 ];
 

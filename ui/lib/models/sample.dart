@@ -1,12 +1,12 @@
 import 'dart:math';
-import 'package:ui/models/translation.dart';
+import 'package:ui/models/translation_learning.dart';
 
 class Sample {
-  final Translation actual;
-  final Translation optionOne;
-  final Translation optionTwo;
-  final Translation optionThree;
-  final Translation optionFour;
+  final TranslationLearning actual;
+  final TranslationLearning optionOne;
+  final TranslationLearning optionTwo;
+  final TranslationLearning optionThree;
+  final TranslationLearning optionFour;
   bool? isSelectedCorrectly;
 
   Sample({
@@ -21,7 +21,9 @@ class Sample {
          optionFour,
        ]);
 
-  static Translation _getRandomOption(List<Translation> options) {
+  static TranslationLearning _getRandomOption(
+    List<TranslationLearning> options,
+  ) {
     final random = Random();
     return options[random.nextInt(options.length)];
   }

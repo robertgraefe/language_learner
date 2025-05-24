@@ -4,8 +4,8 @@ import 'package:ui/views/learning/learning_page/learning_page.dart';
 import 'package:ui/views/navigation/navigation_bottombar.dart';
 import 'package:ui/views/navigation/navigation_sidebar.dart';
 
-class HomePage extends StatelessWidget {
-  const HomePage({super.key});
+class LearningMainPage extends StatelessWidget {
+  const LearningMainPage({super.key});
 
   @override
   Widget build(BuildContext context) {
