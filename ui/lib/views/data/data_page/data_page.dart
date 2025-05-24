@@ -27,14 +27,31 @@ class _ContentWidget extends ConsumerWidget {
     final translations =
         ref.read(translationsViewModelProvider).asData?.value ?? [];
 
-    print(translations);
+    final columns = const [
+      DataColumn(label: Text("Indonesian")),
+      DataColumn(label: Text("English")),
+      DataColumn(label: Text("German")),
+    ];
+
+    final rows =
+        translations
+            .map(
+              (x) => DataRow(
+                cells: [
+                  DataCell(Text(x.id)),
+                  DataCell(Text(x.en)),
+                  DataCell(Text(x.de)),
+                ],
+              ),
+            )
+            .toList();
 
     return Container(
       color: Theme.of(context).colorScheme.primaryContainer,
       child: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [Text("data")],
+        child: SingleChildScrollView(
+          scrollDirection: Axis.vertical,
+          child: DataTable(columns: columns, rows: rows),
         ),
       ),
     );

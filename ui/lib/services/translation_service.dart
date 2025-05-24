@@ -10,7 +10,9 @@ class TranslationService {
     );
 
     if (response.statusCode == 200) {
-      final List<dynamic> jsonData = json.decode(response.body);
+      final List<dynamic> jsonData = json.decode(
+        utf8.decode(response.bodyBytes),
+      );
       jsonData.map((item) => Translation.fromJson(item)).toList();
       return jsonData.map((item) => Translation.fromJson(item)).toList();
     } else {
