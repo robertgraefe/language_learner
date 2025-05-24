@@ -1,48 +1,29 @@
 import 'package:flutter/material.dart';
-
-import 'package:language_learner/context_service.dart';
-
-import 'package:language_learner/learning_page/learning_page.dart';
-import 'package:language_learner/navigation.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:ui/viewmodels/navigation_config.dart';
 
 void main() {
-  runApp(MainApp());
+  runApp(ProviderScope(child: const MainApp()));
 }
 
-class MainApp extends StatefulWidget {
+class MainApp extends StatelessWidget {
   const MainApp({super.key});
 
   @override
-  MyJsonWidgetState createState() => MyJsonWidgetState();
-}
-
-class MyJsonWidgetState extends State<MainApp> {
-  @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (context) {
-        final provider = ContextService();
-        provider.loadLanguagesApi();
-        return provider;
-      },
-      child: MaterialApp(
-        title: 'Namer App',
-        theme: ThemeData(
-          useMaterial3: true,
-          colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepOrange),
-        ),
-        home: HomePage(),
-      ),
+    final router = GoRouter(
+      initialLocation: navigationItems.first.route,
+      routes: routes,
     );
-  }
-}
 
-class HomePage extends StatelessWidget {
-  const HomePage({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(body: Row(children: [NavigationPage(), LearningPage()]));
+    return MaterialApp.router(
+      title: 'Language Learner',
+      theme: ThemeData(
+        useMaterial3: true,
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepOrange),
+      ),
+      routerConfig: router,
+    );
   }
 }
