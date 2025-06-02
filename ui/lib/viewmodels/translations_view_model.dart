@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ui/models/translation.dart';
 import 'package:ui/services/translation_service.dart';
@@ -29,5 +31,17 @@ class TranslationsViewModel extends AsyncNotifier<List<Translation>> {
     final newTranslations = await service.getTranslations();
     _translations = newTranslations;
     state = AsyncData(newTranslations);
+  }
+
+  Future<void> put(List<Translation> translations) async {
+    final service = ref.read(translationServiceProvider);
+    await service.putTranslations(translations);
+    await refresh();
+  }
+
+  Future<void> putFile(File translationFile) async {
+    final service = ref.read(translationServiceProvider);
+    await service.putTranslationFile(translationFile);
+    await refresh();
   }
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ui/viewmodels/translations_view_model.dart';
+import 'package:ui/views/data/data_page/widgets/add_translation.dart';
 import 'package:ui/views/utils/error.dart';
 import 'package:ui/views/utils/loading.dart';
 
@@ -51,7 +52,12 @@ class _ContentWidget extends ConsumerWidget {
       child: Center(
         child: SingleChildScrollView(
           scrollDirection: Axis.vertical,
-          child: DataTable(columns: columns, rows: rows),
+          child: Column(
+            children: [
+              AddTranslationWidget(),
+              DataTable(columns: columns, rows: rows),
+            ],
+          ),
         ),
       ),
     );

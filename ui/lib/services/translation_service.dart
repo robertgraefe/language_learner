@@ -1,7 +1,8 @@
-// lib/services/api_service.dart
 import 'dart:convert';
+import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'package:ui/models/translation.dart';
+import 'package:http_parser/http_parser.dart';
 
 class TranslationService {
   Future<List<Translation>> getTranslations() async {
@@ -17,6 +18,39 @@ class TranslationService {
       return jsonData.map((item) => Translation.fromJson(item)).toList();
     } else {
       throw Exception('Failed to load translation');
+    }
+  }
+
+  Future<void> putTranslations(List<Translation> translations) async {
+    final response = await http.put(
+      Uri.parse("http://165.232.124.109:3000/api/translation"),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode(translations.map((t) => t.toJson()).toList()),
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception('Failed to put translations: ${response.body}');
+    }
+  }
+
+  Future<void> putTranslationFile(File file) async {
+    final request = http.MultipartRequest(
+      'PUT',
+      Uri.parse('http://165.232.124.109:3000/api/translation/file'),
+    );
+
+    request.files.add(
+      await http.MultipartFile.fromPath(
+        'file',
+        file.path,
+        contentType: MediaType('application', 'octet-stream'),
+      ),
+    );
+
+    final response = await request.send();
+
+    if (response.statusCode != 200) {
+      throw Exception('Failed to upload translations');
     }
   }
 }
